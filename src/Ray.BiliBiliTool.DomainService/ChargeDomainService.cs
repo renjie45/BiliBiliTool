@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Interfaces;
-using Ray.BiliBiliTool.Config;
 using Ray.BiliBiliTool.Config.Options;
 using Ray.BiliBiliTool.DomainService.Interfaces;
-using Ray.BiliBiliTool.Infrastructure.Extensions;
 
 namespace Ray.BiliBiliTool.DomainService
 {
@@ -52,15 +47,15 @@ namespace Ray.BiliBiliTool.DomainService
 
             if (DateTime.Today.Day != targetDay)
             {
-                _logger.LogInformation($"目标充电日期为{targetDay}号，今天是{DateTime.Today.Day}号，跳过充电任务");
+                _logger.LogInformation("目标充电日期为{targetDay}号，今天是{today}号，跳过充电任务", targetDay, DateTime.Today.Day);
                 return;
             }
 
             //B币券余额
-            var couponBalance = userInfo.Wallet.Coupon_balance;
+            decimal couponBalance = userInfo.Wallet.Coupon_balance;
             if (couponBalance < 2)
             {
-                _logger.LogInformation("B币券余额<2,无法充电");
+                _logger.LogInformation("不是年度大会员或已过期，无法充电");
                 return;
             }
 
@@ -72,25 +67,25 @@ namespace Ray.BiliBiliTool.DomainService
                 return;
             }
 
-            var response = _dailyTaskApi.Charge(couponBalance * 10, _cookieOptions.UserId, _cookieOptions.UserId, _cookieOptions.BiliJct).Result;
+            BiliApiResponse<ChargeResponse> response = _dailyTaskApi.Charge(couponBalance * 10, _cookieOptions.UserId, _cookieOptions.UserId, _cookieOptions.BiliJct).Result;
             if (response.Code == 0)
             {
                 if (response.Data.Status == 4)
                 {
                     _logger.LogInformation("给自己充电成功啦，送的B币券没有浪费哦");
-                    _logger.LogInformation($"本次给自己充值了: {couponBalance * 10}个电池哦");
+                    _logger.LogInformation("本次给自己充值了: {num}个电池哦", couponBalance * 10);
 
                     //获取充电留言token
                     ChargeComments(response.Data.Order_no);
                 }
                 else
                 {
-                    _logger.LogDebug("充电失败了啊 原因: " + JsonSerializer.Serialize(response));
+                    _logger.LogDebug("充电失败了啊 原因：{reason}", response.ToJson());
                 }
             }
             else
             {
-                _logger.LogDebug("充电失败了啊 原因: " + response.Message);
+                _logger.LogDebug("充电失败了啊 原因：{reason}", response.Message);
             }
         }
 

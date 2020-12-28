@@ -14,6 +14,7 @@ namespace Ray.BiliBiliTool.Application
         private readonly ILogger<DailyTaskAppService> _logger;
         private readonly IAccountDomainService _loginDomainService;
         private readonly IVideoDomainService _videoDomainService;
+        private readonly IDonateCoinDomainService _donateCoinDomainService;
         private readonly IMangaDomainService _mangaDomainService;
         private readonly ILiveDomainService _liveDomainService;
         private readonly IVipPrivilegeDomainService _vipPrivilegeDomainService;
@@ -24,6 +25,7 @@ namespace Ray.BiliBiliTool.Application
             ILogger<DailyTaskAppService> logger,
             IAccountDomainService loginDomainService,
             IVideoDomainService videoDomainService,
+            IDonateCoinDomainService donateCoinDomainService,
             IMangaDomainService mangaDomainService,
             ILiveDomainService liveDomainService,
             IVipPrivilegeDomainService vipPrivilegeDomainService,
@@ -33,6 +35,7 @@ namespace Ray.BiliBiliTool.Application
             _logger = logger;
             _loginDomainService = loginDomainService;
             _videoDomainService = videoDomainService;
+            _donateCoinDomainService = donateCoinDomainService;
             _mangaDomainService = mangaDomainService;
             _liveDomainService = liveDomainService;
             _vipPrivilegeDomainService = vipPrivilegeDomainService;
@@ -42,13 +45,13 @@ namespace Ray.BiliBiliTool.Application
 
         public void DoDailyTask()
         {
-            if(_securityOptions.IsSkipDailyTask)
+            if (_securityOptions.IsSkipDailyTask)
             {
-                _logger.LogWarning("已配置为跳过每日任务");
+                _logger.LogWarning("\r\n已配置为跳过每日任务");
                 return;
             }
 
-            _logger.LogInformation("-----开始每日任务-----\r\n");
+            _logger.LogInformation("\r\n-----开始每日任务-----\r\n");
 
             UseInfo userInfo;
             DailyTaskInfo dailyTaskInfo;
@@ -78,6 +81,7 @@ namespace Ray.BiliBiliTool.Application
         {
             UseInfo userInfo = _loginDomainService.LoginByCookie();
             if (userInfo == null) throw new Exception("登录失败，请检查Cookie");//终止流程
+
             return userInfo;
         }
 
@@ -106,7 +110,7 @@ namespace Ray.BiliBiliTool.Application
         [TaskInterceptor("投币", false)]
         private void AddCoinsForVideo()
         {
-            _videoDomainService.AddCoinsForVideo();
+            _donateCoinDomainService.AddCoinsForVideo();
         }
 
         /// <summary>

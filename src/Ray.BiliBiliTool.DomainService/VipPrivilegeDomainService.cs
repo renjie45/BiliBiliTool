@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Dtos;
 using Ray.BiliBiliTool.Agent.BiliBiliAgent.Interfaces;
-using Ray.BiliBiliTool.Config;
 using Ray.BiliBiliTool.Config.Options;
 using Ray.BiliBiliTool.DomainService.Interfaces;
 
@@ -68,8 +65,8 @@ namespace Ray.BiliBiliTool.DomainService
             }
         }
 
-
         #region private
+
         /// <summary>
         /// 领取大会员每月赠送福利
         /// </summary>
@@ -77,22 +74,37 @@ namespace Ray.BiliBiliTool.DomainService
         private void ReceiveVipPrivilege(int type)
         {
             var response = _dailyTaskApi.ReceiveVipPrivilege(type, _biliBiliCookieOptions.BiliJct).Result;
+
+            var name = GetPrivilegeName(type);
             if (response.Code == 0)
             {
-                if (type == 1)
-                {
-                    _logger.LogInformation("领取年度大会员每月赠送的B币券成功");
-                }
-                else if (type == 2)
-                {
-                    _logger.LogInformation("领取大会员福利/权益成功");
-                }
+                _logger.LogInformation($"{name}成功");
             }
             else
             {
-                _logger.LogInformation($"领取年度大会员每月赠送的B币券/大会员福利失败，原因: {response.Message}");
+                _logger.LogInformation($"{name}失败，原因: {response.Message}");
             }
         }
-        #endregion
+
+        /// <summary>
+        /// 获取权益名称
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        private string GetPrivilegeName(int type)
+        {
+            switch (type)
+            {
+                case 1:
+                    return "领取年度大会员每月赠送的B币券";
+
+                case 2:
+                    return "领取大会员福利/权益";
+            }
+
+            return "";
+        }
+
+        #endregion private
     }
 }

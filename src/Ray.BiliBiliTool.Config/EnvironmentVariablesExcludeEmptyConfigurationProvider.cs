@@ -2,8 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration.EnvironmentVariables;
 
 namespace Ray.BiliBiliTool.Config
@@ -14,22 +12,32 @@ namespace Ray.BiliBiliTool.Config
     /// </summary>
     public class EnvironmentVariablesExcludeEmptyConfigurationProvider : EnvironmentVariablesConfigurationProvider
     {
-        private readonly string prefix;
+        private readonly string _prefix;
+        private readonly Func<KeyValuePair<string, string>, bool> _startsWith;
+        private readonly Func<KeyValuePair<string, string>, bool> _removeNullValue;
+        private readonly Func<KeyValuePair<string, string>, bool> _fifter;
+        private readonly Func<KeyValuePair<string, string>, KeyValuePair<string, string>> _removePrefix;
 
         public EnvironmentVariablesExcludeEmptyConfigurationProvider(string prefix = null) : base(prefix)
         {
-            this.prefix = prefix ?? string.Empty;
+            _prefix = prefix ?? string.Empty;
+            _startsWith = c => c.Key.StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+            _removeNullValue = c => !string.IsNullOrWhiteSpace(c.Value);
+            _fifter = c => _startsWith(c) && _removeNullValue(c);
+
+            _removePrefix = prefix.Length == 0
+                ? t => t
+                : t => t.NewKey(c => c.Substring(prefix.Length));
         }
 
         public override void Load()
         {
-            var dictionary = Environment.GetEnvironmentVariables()
-                .Cast<DictionaryEntry>()
-                .Where(it => it.Key.ToString().StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
-                             && !string.IsNullOrWhiteSpace(it.Value.ToString()))//过滤掉空值的
-                .ToDictionary(it => it.Key.ToString().Substring(prefix.Length), it => it.Value.ToString());
+            Dictionary<string, string> dictionary = Environment.GetEnvironmentVariables()
+                .ToDictionary(otherAction: t => t
+                     .Where(_fifter)
+                     .Select(_removePrefix));
 
-            this.Data = new Dictionary<string, string>(dictionary, StringComparer.OrdinalIgnoreCase);
+            base.Data = new Dictionary<string, string>(dictionary, StringComparer.OrdinalIgnoreCase);
         }
     }
 }
