@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Ray.BiliBiliTool.Agent.BiliBiliAgent.Interfaces;
 using Ray.BiliBiliTool.Console;
 using Ray.BiliBiliTool.DomainService.Interfaces;
 using Ray.BiliBiliTool.Infrastructure;
@@ -10,11 +11,15 @@ namespace DailyTaskTest
 {
     public class AddCoinsForVideo
     {
+        public AddCoinsForVideo()
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+            Program.Init(new string[] { });
+        }
+
         [Fact]
         public void TestGetCanDonatedVideo()
         {
-            Program.PreWorks(new string[] { });
-
             using (var scope = Global.ServiceProviderRoot.CreateScope())
             {
                 var service = scope.ServiceProvider.GetRequiredService<IDonateCoinDomainService>();
@@ -30,8 +35,6 @@ namespace DailyTaskTest
         [Fact]
         public void Test1()
         {
-            Program.PreWorks(new string[] { });
-
             using (var scope = Global.ServiceProviderRoot.CreateScope())
             {
                 var service = scope.ServiceProvider.GetRequiredService<IDonateCoinDomainService>();
@@ -45,13 +48,26 @@ namespace DailyTaskTest
         [Fact]
         public void Test2()
         {
-            Program.PreWorks(new string[] { });
-
             using (var scope = Global.ServiceProviderRoot.CreateScope())
             {
                 var service = scope.ServiceProvider.GetRequiredService<IDonateCoinDomainService>();
 
-                service.DoAddCoinForVideo("627549610", 1, true);
+                service.DoAddCoinForVideo("543318157", 1, true);
+            }
+
+            Assert.True(true);
+        }
+
+        [Fact]
+        public void GetVideoInfo()
+        {
+            using (var scope = Global.ServiceProviderRoot.CreateScope())
+            {
+                var service = scope.ServiceProvider.GetRequiredService<IVideoApi>();
+
+                //var re = service.GetVideoDetail("246364184").Result;//×ÔÖÆ
+                var re = service.GetVideoDetail("373987080").Result;//×ªÔØ
+
             }
 
             Assert.True(true);

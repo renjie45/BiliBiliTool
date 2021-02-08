@@ -17,5 +17,12 @@ namespace Ray.BiliBiliTool.Config
         /// 开源地址
         /// </summary>
         public static string SourceCodeUrl = "https://github.com/RayWangQvQ/BiliBiliTool";
+
+        public static class OptionsNames
+        {
+            public static string ExpDictionaryName = "ExpDictionary";
+
+            public static string DonateCoinCanContinueStatusDictionaryName = "DonateCoinCanContinueStatusDictionary";
+        }
     }
 }

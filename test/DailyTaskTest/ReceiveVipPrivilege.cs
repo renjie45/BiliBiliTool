@@ -9,10 +9,16 @@ namespace DailyTaskTest
 {
     public class ReceiveVipPrivilege
     {
+        public ReceiveVipPrivilege()
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+            Program.Init(null);
+        }
+
         [Fact]
         public void Test1()
         {
-            Program.PreWorks(new string[] { });
+            Program.Init(new string[] { });
 
             using (var scope = Global.ServiceProviderRoot.CreateScope())
             {

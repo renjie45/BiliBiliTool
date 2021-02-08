@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Ray.BiliBiliTool.Config.Options;
@@ -20,7 +21,9 @@ namespace Ray.BiliBiliTool.Config.Extensions
                 .Configure<JsonSerializerOptions>(o => o = JsonSerializerOptionsBuilder.DefaultOptions)
                 .Configure<BiliBiliCookieOptions>(configuration.GetSection("BiliBiliCookie"))
                 .Configure<DailyTaskOptions>(configuration.GetSection("DailyTaskConfig"))
-                .Configure<SecurityOptions>(configuration.GetSection("Security"));
+                .Configure<SecurityOptions>(configuration.GetSection("Security"))
+                .Configure<Dictionary<string, int>>(Constants.OptionsNames.ExpDictionaryName, configuration.GetSection("Exp"))
+                .Configure<Dictionary<string, string>>(Constants.OptionsNames.DonateCoinCanContinueStatusDictionaryName, configuration.GetSection("DonateCoinCanContinueStatus"));
 
             return services;
         }

@@ -32,7 +32,7 @@ namespace Ray.BiliBiliTool.DomainService
         /// </summary>
         public void LiveSign()
         {
-            var response = _liveApi.Sign().Result;
+            var response = _liveApi.Sign().GetAwaiter().GetResult();
 
             if (response.Code == 0)
             {
@@ -52,13 +52,25 @@ namespace Ray.BiliBiliTool.DomainService
         {
             var result = false;
 
-            if (!_dailyTaskOptions.IsExchangeSilver2Coin)
+            if (_dailyTaskOptions.DayOfExchangeSilver2Coin == 0)
             {
-                _logger.LogInformation("已配置为跳过兑换任务");
-                return result;
+                _logger.LogInformation("已配置为不进行兑换，跳过兑换任务");
+                return false;
             }
 
-            var response = _liveApi.ExchangeSilver2Coin().Result;
+            int targetDay = _dailyTaskOptions.DayOfExchangeSilver2Coin == -2
+                ? DateTime.Today.Day
+                : _dailyTaskOptions.DayOfExchangeSilver2Coin == -1
+                    ? DateTime.Today.LastDayOfMonth().Day
+                    : _dailyTaskOptions.DayOfExchangeSilver2Coin;
+
+            if (DateTime.Today.Day != targetDay)
+            {
+                _logger.LogInformation("目标兑换日期为{targetDay}号，今天是{day}号，跳过兑换任务", targetDay, DateTime.Today.Day);
+                return false;
+            }
+
+            var response = _liveApi.ExchangeSilver2Coin().GetAwaiter().GetResult();
             if (response.Code == 0)
             {
                 result = true;
@@ -69,7 +81,7 @@ namespace Ray.BiliBiliTool.DomainService
                 _logger.LogInformation("银瓜子兑换硬币失败，原因：{0}", response.Message);
             }
 
-            var queryStatus = _liveApi.GetExchangeSilverStatus().Result;
+            var queryStatus = _liveApi.GetExchangeSilverStatus().GetAwaiter().GetResult();
             _logger.LogInformation("当前银瓜子余额: {0}", queryStatus.Data.Silver);
 
             return result;
